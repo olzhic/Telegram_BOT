@@ -1,0 +1,1 @@
+"""Adal Navigator application package."""
