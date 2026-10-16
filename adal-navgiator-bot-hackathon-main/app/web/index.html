@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Adal Navigator</title>
+    <link rel="stylesheet" href="/static/styles.css?v=1">
+  </head>
+  <body>
+    <main class="chat">
+      <header>
+        <h1>Adal Navigator</h1>
+        <p>Помощник по городским вопросам Алматы · Алматы қаласының мәселелері бойынша көмекші</p>
+      </header>
+      <section id="messages" class="messages" aria-live="polite">
+        <article class="message bot">
+          Опишите проблему на русском или казахском языке. Не отправляйте ИИН, пароли или ключи ЭЦП.
+        </article>
+      </section>
+      <div id="actions" class="actions" hidden>
+        <button id="confirm" type="button">Да, верно / Иә, дұрыс</button>
+        <button id="correct" type="button">Исправить / Түзету</button>
+      </div>
+      <form id="chat-form">
+        <label class="visually-hidden" for="message">Ваше сообщение</label>
+        <textarea id="message" maxlength="4000" rows="3" placeholder="Опишите проблему / Мәселені сипаттаңыз" required></textarea>
+        <div class="controls">
+          <button type="submit">Отправить / Жіберу</button>
+          <button id="reset" class="secondary" type="button">Новый диалог / Жаңа диалог</button>
+        </div>
+      </form>
+    </main>
+    <script src="/static/app.js?v=2" defer></script>
+  </body>
+</html>

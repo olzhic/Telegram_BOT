@@ -1,0 +1,51 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: adal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/00-create-app-role.sh:/docker-entrypoint-initdb.d/00-create-app-role.sh:ro
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d adal"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    extra_hosts:
+      - "host.docker.internal:${DOCKER_HOST_GATEWAY}" # Maps the host gateway cleanly inside Linux containers
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql+asyncpg://adal_app:${APP_DB_PASSWORD}@db:5432/adal
+      CHAT_ID_HMAC_SECRET: ${CHAT_ID_HMAC_SECRET:?Set CHAT_ID_HMAC_SECRET in .env}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LLM_PROVIDER_ORDER: ${LLM_PROVIDER_ORDER:-gemini,openrouter,ollama}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODELS: ${OPENROUTER_MODELS:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3.5:4b}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-bge-m3}
+      OLLAMA_EMBEDDING_URL: ${OLLAMA_EMBEDDING_URL:-http://host.docker.internal:11434/api/embed}
+      LLM_TIMEOUT_CLOUD_S: ${LLM_TIMEOUT_CLOUD_S:-15}
+      LLM_TIMEOUT_LOCAL_S: ${LLM_TIMEOUT_LOCAL_S:-60}
+      LLM_BREAKER_FAILURES: ${LLM_BREAKER_FAILURES:-3}
+      LLM_BREAKER_COOLDOWN_S: ${LLM_BREAKER_COOLDOWN_S:-60}
+      RETRIEVAL_TOP_K: ${RETRIEVAL_TOP_K:-5}
+      RETRIEVAL_MIN_SCORE: ${RETRIEVAL_MIN_SCORE:-0.45}
+      MAX_MESSAGE_LENGTH: ${MAX_MESSAGE_LENGTH:-4000}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
